@@ -8,15 +8,19 @@ function usage() {
 }
 
 function parseLimit(args) {
-  const index = args.indexOf("--max-states");
-  if (index === -1) return 100_000;
-  const value = Number(args[index + 1]);
-  if (!Number.isSafeInteger(value) || value < 1) throw new RangeError("--max-states must be a positive integer");
+  if (args.length === 0) return 100_000;
+  if (args.length !== 2 || args[0] !== "--max-states") {
+    throw new RangeError("expected --max-states followed by one positive integer");
+  }
+  const value = Number(args[1]);
+  if (!Number.isSafeInteger(value) || value < 1) {
+    throw new RangeError("--max-states must be a positive integer");
+  }
   return value;
 }
 
 const [modelName, ...args] = process.argv.slice(2);
-if (!["peterson", "broken"].includes(modelName) || args.some((item, index) => item === "--max-states" ? false : index === 0 && args[index - 1] === "--max-states" ? false : true)) {
+if (!["peterson", "broken"].includes(modelName)) {
   usage();
   process.exitCode = 2;
 } else {
