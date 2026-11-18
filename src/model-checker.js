@@ -184,6 +184,22 @@ export function explore({
     maxDepthReached = Math.max(maxDepthReached, currentDepth);
 
     const valid = invariant(currentState);
+    const outgoing = successors(currentState);
+    if (!Array.isArray(outgoing)) {
+      throw new TypeError("successors must return an array");
+    }
+    if (symmetry) {
+      assertSymmetryContract({
+        state: currentState,
+        outgoing,
+        invariantResult: valid,
+        successors,
+        invariant,
+        isTerminal,
+        symmetry,
+      });
+      symmetryStatesValidated += 1;
+    }
     if (valid !== true) {
       const message = typeof valid === "string"
         ? valid
@@ -201,23 +217,6 @@ export function explore({
         symmetryStatesValidated,
         counterexample: reconstructTrace(currentKey, states, parents, depths),
       };
-    }
-
-    const outgoing = successors(currentState);
-    if (!Array.isArray(outgoing)) {
-      throw new TypeError("successors must return an array");
-    }
-    if (symmetry) {
-      assertSymmetryContract({
-        state: currentState,
-        outgoing,
-        invariantResult: valid,
-        successors,
-        invariant,
-        isTerminal,
-        symmetry,
-      });
-      symmetryStatesValidated += 1;
     }
     if (outgoing.length === 0 && !isTerminal(currentState)) {
       deadlockCount += 1;
