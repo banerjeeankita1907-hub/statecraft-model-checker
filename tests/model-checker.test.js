@@ -64,7 +64,7 @@ test("deadlocks are counted separately from explicit terminal states", () => {
 test("rejects malformed transition and invalid limits", () => {
   assert.throws(() => explore({ initialState: {}, invariant: () => true }), /successors/);
   assert.throws(() => explore({ initialState: {}, successors: () => [null], invariant: () => true }), /transition/);
-  assert.throws(() => explore({ initialState: {}, successors: () => [{}], invariant: () => true }), /label/);
+  assert.throws(() => explore({ initialState: {}, successors: () => [{ state: {} }], invariant: () => true }), /label/);
   assert.throws(() => explore({ initialState: {}, successors: () => [], invariant: () => true, maxStates: 0 }), /maxStates/);
 });
 
