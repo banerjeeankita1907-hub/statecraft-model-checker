@@ -1,5 +1,5 @@
 /**
- * Explicit-state breadth-first model checker.
+ * Explicit-state breadth-first model checker with optional symmetry quotienting.
  *
  * States must be JSON-serializable. The checker treats them as immutable and
  * canonicalizes object keys so structurally equal states have the same key.
@@ -70,12 +70,66 @@ function validateLimit(value, name, minimum) {
   }
 }
 
+function validateTransitionList(edges, description) {
+  if (!Array.isArray(edges)) {
+    throw new TypeError(`${description} successors must return an array`);
+  }
+  for (const edge of edges) {
+    if (!edge || typeof edge !== "object" || !("state" in edge)) {
+      throw new TypeError(`${description} transition must contain a state`);
+    }
+    snapshot(edge.state);
+  }
+}
+
+function assertSymmetryContract({ state, outgoing, invariantResult, successors, invariant, isTerminal, symmetry }) {
+  const originalTerminal = Boolean(isTerminal(state));
+  const originalTargets = new Set(outgoing.map((edge) => stableStateKey(edge.state)));
+  const representativeKey = stableStateKey(symmetry.canonicalize(state));
+
+  for (const permutation of symmetry.permutations) {
+    const transformed = snapshot(symmetry.transform(state, permutation));
+    const transformedInvariant = invariant(transformed);
+    if ((transformedInvariant === true) !== (invariantResult === true)) {
+      throw new Error(
+        `symmetry contract failed: invariant is not preserved by permutation [${permutation.join(",")}]`
+      );
+    }
+    if (Boolean(isTerminal(transformed)) !== originalTerminal) {
+      throw new Error(
+        `symmetry contract failed: terminal-state classification is not preserved by permutation [${permutation.join(",")}]`
+      );
+    }
+    if (stableStateKey(symmetry.canonicalize(transformed)) !== representativeKey) {
+      throw new Error(
+        `symmetry contract failed: transformations do not preserve the orbit for permutation [${permutation.join(",")}]`
+      );
+    }
+
+    const transformedOutgoing = successors(transformed);
+    validateTransitionList(transformedOutgoing, "transformed");
+    const expectedTargets = new Set(
+      outgoing.map((edge) => stableStateKey(symmetry.transform(edge.state, permutation)))
+    );
+    const actualTargets = new Set(
+      transformedOutgoing.map((edge) => stableStateKey(edge.state))
+    );
+    if (expectedTargets.size !== actualTargets.size
+      || [...expectedTargets].some((key) => !actualTargets.has(key))) {
+      throw new Error(
+        `symmetry contract failed: transition relation is not equivariant for permutation [${permutation.join(",")}]`
+      );
+    }
+  }
+}
+
 export function explore({
   initialState,
   successors,
   invariant,
   isTerminal = () => false,
   stateKey = stableStateKey,
+  symmetry = null,
   maxStates = 100_000,
   maxDepth = 10_000,
   maxTransitions = 1_000_000,
@@ -84,11 +138,31 @@ export function explore({
   if (typeof invariant !== "function") throw new TypeError("invariant must be a function");
   if (typeof isTerminal !== "function") throw new TypeError("isTerminal must be a function");
   if (typeof stateKey !== "function") throw new TypeError("stateKey must be a function");
+  if (symmetry !== null) {
+    if (typeof symmetry.canonicalize !== "function"
+      || typeof symmetry.transform !== "function"
+      || !Array.isArray(symmetry.permutations)
+      || !Number.isSafeInteger(symmetry.groupSize)
+      || symmetry.groupSize !== symmetry.permutations.length
+      || symmetry.groupSize < 1) {
+      throw new TypeError("symmetry must be created by createPermutationSymmetry");
+    }
+    if (stateKey !== stableStateKey) {
+      throw new TypeError("custom stateKey is not supported with symmetry reduction");
+    }
+  }
   validateLimit(maxStates, "maxStates", 1);
   validateLimit(maxDepth, "maxDepth", 0);
   validateLimit(maxTransitions, "maxTransitions", 1);
 
-  const initial = snapshot(initialState);
+  const rawInitial = snapshot(initialState);
+  let initial = rawInitial;
+  if (symmetry) {
+    initial = snapshot(symmetry.canonicalize(rawInitial));
+    if (stableStateKey(initial) !== stableStateKey(rawInitial)) {
+      throw new Error("symmetry contract failed: the single initial state must be fixed by every group action");
+    }
+  }
   const initialKey = stateKey(initial);
   if (typeof initialKey !== "string") throw new TypeError("stateKey must return a string");
 
@@ -101,6 +175,7 @@ export function explore({
   let deadlockCount = 0;
   let maxDepthReached = 0;
   let truncated = false;
+  let symmetryStatesValidated = 0;
 
   while (head < queue.length) {
     const currentKey = queue[head++];
@@ -122,6 +197,8 @@ export function explore({
         transitionsExplored,
         deadlockCount,
         maxDepthReached,
+        symmetryGroupSize: symmetry?.groupSize ?? 1,
+        symmetryStatesValidated,
         counterexample: reconstructTrace(currentKey, states, parents, depths),
       };
     }
@@ -129,6 +206,18 @@ export function explore({
     const outgoing = successors(currentState);
     if (!Array.isArray(outgoing)) {
       throw new TypeError("successors must return an array");
+    }
+    if (symmetry) {
+      assertSymmetryContract({
+        state: currentState,
+        outgoing,
+        invariantResult: valid,
+        successors,
+        invariant,
+        isTerminal,
+        symmetry,
+      });
+      symmetryStatesValidated += 1;
     }
     if (outgoing.length === 0 && !isTerminal(currentState)) {
       deadlockCount += 1;
@@ -147,7 +236,11 @@ export function explore({
         break;
       }
 
-      const next = snapshot(edge.state);
+      const rawNext = snapshot(edge.state);
+      const next = symmetry ? snapshot(symmetry.canonicalize(rawNext)) : rawNext;
+      if (symmetry && stableStateKey(symmetry.canonicalize(next)) !== stableStateKey(next)) {
+        throw new Error("symmetry contract failed: canonicalize must return an idempotent orbit representative");
+      }
       const nextKey = stateKey(next);
       if (typeof nextKey !== "string") throw new TypeError("stateKey must return a string");
       if (states.has(nextKey)) continue;
@@ -172,6 +265,8 @@ export function explore({
     transitionsExplored,
     deadlockCount,
     maxDepthReached,
+    symmetryGroupSize: symmetry?.groupSize ?? 1,
+    symmetryStatesValidated,
     counterexample: null,
   };
 }
