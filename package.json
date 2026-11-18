@@ -1,0 +1,15 @@
+{
+  "name": "statecraft-model-checker",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Explicit-state model checker for finite concurrent systems.",
+  "scripts": {
+    "test": "node --test",
+    "check": "node --check src/model-checker.js && node --check src/models/peterson.js && node --check src/cli.js",
+    "peterson": "node src/cli.js peterson",
+    "broken": "node src/cli.js broken"
+  },
+  "engines": { "node": ">=20" },
+  "license": "MIT"
+}
