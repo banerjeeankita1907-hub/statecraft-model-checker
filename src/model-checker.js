@@ -84,7 +84,6 @@ function validateTransitionList(edges, description) {
 
 function assertSymmetryContract({ state, outgoing, invariantResult, successors, invariant, isTerminal, symmetry }) {
   const originalTerminal = Boolean(isTerminal(state));
-  const originalTargets = new Set(outgoing.map((edge) => stableStateKey(edge.state)));
   for (const permutation of symmetry.permutations) {
     const transformed = snapshot(symmetry.transform(state, permutation));
     const transformedInvariant = invariant(transformed);
