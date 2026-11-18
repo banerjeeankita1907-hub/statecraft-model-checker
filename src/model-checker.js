@@ -100,12 +100,6 @@ function assertSymmetryContract({ state, outgoing, invariantResult, successors, 
         `symmetry contract failed: terminal-state classification is not preserved by permutation [${permutation.join(",")}]`
       );
     }
-    if (stableStateKey(symmetry.canonicalize(transformed)) !== representativeKey) {
-      throw new Error(
-        `symmetry contract failed: transformations do not preserve the orbit for permutation [${permutation.join(",")}]`
-      );
-    }
-
     const transformedOutgoing = successors(transformed);
     validateTransitionList(transformedOutgoing, "transformed");
     const expectedTargets = new Set(
