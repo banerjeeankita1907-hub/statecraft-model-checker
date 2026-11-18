@@ -29,3 +29,37 @@ The invariant is a pure predicate over one state. Return `true` for a valid stat
 Let \(|S_r|\) be the number of reachable states and \(|T_r|\) the number of reachable transitions. With expected constant-time hash-map access, time is \(O(|S_r| + |T_r|)\), and memory is \(O(|S_r|)\), including one predecessor per discovered state.
 
 The state-space itself can grow exponentially in the number of independent components. Limits are therefore first-class API inputs rather than hidden implementation details.
+
+
+## Symmetry quotient exploration
+
+An optional finite permutation group can identify states that differ only by
+renaming interchangeable process identities. The reducer stores one
+lexicographically canonical JSON representative per orbit. Successors are
+generated from that representative and canonicalized before insertion.
+
+The supplied `createPermutationSymmetry` helper enumerates the full symmetric
+group `S_n` for at most seven processes. This is deliberately a small-model
+implementation: orbit canonicalization enumerates `n!` process permutations.
+It is exact, but its canonicalization overhead can outweigh state savings for
+small or weakly symmetric models.
+
+Before a representative is expanded, the checker evaluates every group image
+and checks that (i) the safety predicate has the same truth value, (ii)
+terminal-state classification agrees, and (iii) the successor-state sets are
+exactly related by the same permutation. Transition labels are ignored by the
+equivariance check because this version checks reachability safety, not
+label-sensitive temporal properties. A failed check aborts rather than
+silently claiming a proof.
+
+The initial-state requirement is intentionally strict: this API accepts one
+initial state and requires it to be fixed by every group action. It does not
+yet accept a set of initial states or compute the closure of an asymmetric
+initial set. The `permuteState` callback must implement a genuine group action
+(identity, composition and inverses) on all process-indexed state fields.
+Runtime transition checks do not prove that callback's group-action algebra.
+
+With symmetry enabled, `statesExplored` counts orbit representatives rather
+than concrete states. `symmetryGroupSize` and
+`symmetryStatesValidated` report the group size and number of representatives
+for which all runtime preservation checks completed.
