@@ -81,10 +81,7 @@ test("rejects a single initial state that is not fixed by the group", () => {
 
 test("runtime checker rejects a property that distinguishes symmetric processes", () => {
   const model = {
-    initialState: { done: [false, false] },
-    successors: (state) => state.done[0]
-      ? []
-      : [{ state: { done: [true, false] }, label: "complete P0" }],
+    ...createIndependentOneShotModel(2),
     invariant: (state) => !state.done[1],
   };
   assert.throws(
@@ -109,11 +106,7 @@ test("runtime checker rejects a transition relation that is not equivariant", ()
 
 test("runtime checker rejects terminal classifications that break symmetry", () => {
   const model = {
-    initialState: { done: [false, false] },
-    successors: (state) => state.done.some(Boolean)
-      ? []
-      : [{ state: { done: [true, false] }, label: "complete P0" }],
-    invariant: () => true,
+    ...createIndependentOneShotModel(2),
     isTerminal: (state) => state.done[0],
   };
   assert.throws(
