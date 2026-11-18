@@ -1,16 +1,24 @@
-# Reproducible experiment results
+# Reproducible baseline experiment results
 
-The following results were recorded from the GitHub Actions run for the Statecraft CLI experiments.
+These baseline measurements are superseded by the ordinary-versus-symmetry
+comparison in [symmetry-benchmark-results.md](symmetry-benchmark-results.md),
+which includes current model versions and exact CI-run provenance.
+
+For the current Peterson model, GitHub Actions recorded:
 
 | Model | Result | Reachable states | Transitions | Deadlocks |
 |---|---:|---:|---:|---:|
-| Peterson protocol | Safe | 26 | 44 | 0 |
-| Broken guard (fault injection) | Violation | 33 | 52 | 0 |
+| Peterson protocol | Safe | 30 | 52 | 0 |
+| Broken guard (fault injection) | Violation | 36 | 54 | 0 |
 
-The broken protocol produced a counterexample of six transitions (seven states including the initial state). Both experiments ran with the default 100,000-state bound, so neither result was truncated.
+The broken model produces a counterexample of six transitions (seven states
+including the initial state). The ordinary BFS run uses the default
+100,000-state bound and is not truncated.
 
-## Interpretation
+The full-versus-reduced comparison, fault-injection preservation check,
+independent-process microbenchmarks and reduction percentages are documented
+in [the symmetry benchmark report](symmetry-benchmark-results.md).
 
-The correct model's finite reachable state graph was fully explored and every reachable state satisfied the mutual-exclusion invariant. The fault-injected model reached a state with both `inCritical[0]` and `inCritical[1]` true, demonstrating that the invariant checker detects this particular safety failure.
-
-These counts are implementation- and model-specific. They are not benchmark comparisons and do not establish properties outside the encoded finite abstraction. The model omits scheduler fairness, memory reordering, real-time behavior, and liveness properties.
+These counts describe this explicit finite model only. They do not establish
+scheduler fairness, memory reordering correctness, real-time behavior,
+liveness, or properties outside the encoded abstraction.
