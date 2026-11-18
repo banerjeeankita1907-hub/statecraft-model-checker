@@ -69,7 +69,7 @@ test("fully symmetric independent processes collapse 2^n states to n+1 orbits", 
 
 test("rejects a single initial state that is not fixed by the group", () => {
   const model = {
-    initialState: { done: [true, false] },
+    initialState: { done: [false, true] },
     successors: () => [],
     invariant: () => true,
   };
