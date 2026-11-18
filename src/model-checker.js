@@ -158,9 +158,16 @@ export function explore({
   const rawInitial = snapshot(initialState);
   let initial = rawInitial;
   if (symmetry) {
+    const rawInitialKey = stableStateKey(rawInitial);
+    for (const permutation of symmetry.permutations) {
+      const transformedInitial = snapshot(symmetry.transform(rawInitial, permutation));
+      if (stableStateKey(transformedInitial) !== rawInitialKey) {
+        throw new Error("symmetry contract failed: the single initial state must be fixed by every group action");
+      }
+    }
     initial = snapshot(symmetry.canonicalize(rawInitial));
-    if (stableStateKey(initial) !== stableStateKey(rawInitial)) {
-      throw new Error("symmetry contract failed: the single initial state must be fixed by every group action");
+    if (stableStateKey(initial) !== rawInitialKey) {
+      throw new Error("symmetry contract failed: canonicalize changed a fixed initial state");
     }
   }
   const initialKey = stateKey(initial);
