@@ -8,7 +8,10 @@
 export function createPetersonModel({ broken = false } = {}) {
   const initialState = {
     flag: [false, false],
-    // `null` represents an unspecified initial tie-break value. The protocol\n    // overwrites it before a process evaluates its waiting guard; this keeps\n    // the initial state invariant under exchanging identical process IDs.\n    turn: null,
+    // `null` represents an unspecified initial tie-break value. The protocol
+    // overwrites it before a process evaluates its waiting guard; this keeps
+    // the initial state invariant under exchanging identical process IDs.
+    turn: null,
     pc: [0, 0],
     inCritical: [false, false],
   };
