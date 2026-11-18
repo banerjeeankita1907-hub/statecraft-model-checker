@@ -6,10 +6,13 @@
   "description": "Explicit-state model checker for finite concurrent systems.",
   "scripts": {
     "test": "node --test",
-    "check": "node --check src/model-checker.js && node --check src/models/peterson.js && node --check src/cli.js",
+    "check": "node --check src/model-checker.js && node --check src/symmetry.js && node --check src/benchmark.js && node --check src/models/peterson.js && node --check src/models/symmetry-benchmarks.js && node --check src/cli.js",
     "peterson": "node src/cli.js peterson",
-    "broken": "node src/cli.js broken"
+    "broken": "node src/cli.js broken",
+    "benchmark": "node src/cli.js benchmark"
   },
-  "engines": { "node": ">=20" },
+  "engines": {
+    "node": ">=20"
+  },
   "license": "MIT"
-}
+}\n
