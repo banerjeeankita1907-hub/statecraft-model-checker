@@ -1,0 +1,15 @@
+{
+  "models": [
+    {
+      "name": "peterson",
+      "purpose": "Check mutual exclusion in the two-process Peterson model",
+      "expected_status": "safe"
+    },
+    {
+      "name": "broken",
+      "purpose": "Verify that the invariant checker finds the injected guard fault",
+      "expected_status": "violation"
+    }
+  ],
+  "invariant": "not (inCritical[0] and inCritical[1])"
+}
