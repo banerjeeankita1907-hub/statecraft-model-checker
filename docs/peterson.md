@@ -3,7 +3,7 @@
 This model represents two processes, \(P_0\) and \(P_1\), sharing:
 
 - `flag[i]`: process \(P_i\) wants to enter the critical section.
-- `turn`: tie-break preference.
+- `turn`: tie-break preference. Its initial value is `null`, representing an unspecified initial tie-break; each process writes it before testing the waiting condition.
 - `pc[i]`: finite program counter for each process.
 - `inCritical[i]`: whether a process is currently inside the critical section.
 
