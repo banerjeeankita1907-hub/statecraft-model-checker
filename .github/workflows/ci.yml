@@ -22,6 +22,8 @@ jobs:
       - run: npm test
       - name: Verify correct protocol
         run: npm run peterson
+      - name: Compare full and symmetry-reduced exploration
+        run: npm run benchmark
       - name: Verify fault injection is detected
         shell: bash
         run: |
