@@ -34,7 +34,7 @@ The engine explores a finite labelled transition system:
 - A violated invariant produces a shortest trace in number of transitions.
 - State, depth, and transition limits return `inconclusive`, never an unqualified proof of safety.
 
-See [docs/semantics.md](docs/semantics.md) and [docs/peterson.md](docs/peterson.md).
+See [docs/semantics.md](docs/semantics.md), [docs/peterson.md](docs/peterson.md), and the [CI-recorded experiment results](docs/experiment-results.md).
 
 ## Project structure
 
