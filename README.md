@@ -1,5 +1,7 @@
 # Statecraft
 
+[![CI](https://github.com/banerjeeankita1907-hub/pact-/actions/workflows/ci.yml/badge.svg)](https://github.com/banerjeeankita1907-hub/pact-/actions/workflows/ci.yml)
+
 **An explicit-state model checker for small concurrent systems.**
 
 Statecraft explores finite transition systems with breadth-first search, checks safety invariants, detects deadlocks, and returns shortest counterexample traces. It includes a two-process Peterson mutual-exclusion model and an intentionally broken variant to demonstrate a counterexample.
