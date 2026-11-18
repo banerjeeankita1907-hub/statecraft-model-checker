@@ -6,7 +6,7 @@ import { createPetersonModel } from "./models/peterson.js";
 
 function usage() {
   process.stderr.write(
-    "Usage: node src/cli.js <peterson|broken|benchmark> [--max-states N | --max-processes N]\\n",
+    "Usage: node src/cli.js <peterson|broken|benchmark> [--max-states N | --max-processes N]\n",
   );
 }
 
@@ -28,10 +28,10 @@ if (command === "benchmark") {
     const report = runSymmetryBenchmarks({
       maxProcesses: parseOption(args, "--max-processes", 7, 2, 7),
     });
-    process.stdout.write(JSON.stringify(report, null, 2) + "\\n");
+    process.stdout.write(JSON.stringify(report, null, 2) + "\n");
     process.exitCode = Object.values(report.correctnessChecks).every(Boolean) ? 0 : 1;
   } catch (error) {
-    process.stderr.write(`statecraft: ${error.message}\\n`);
+    process.stderr.write(`statecraft: ${error.message}\n`);
     process.exitCode = 2;
   }
 } else if (!["peterson", "broken"].includes(command)) {
@@ -44,10 +44,10 @@ if (command === "benchmark") {
       ...model,
       maxStates: parseOption(args, "--max-states", 100_000, 1),
     });
-    process.stdout.write(JSON.stringify({ model: command, ...report }, null, 2) + "\\n");
+    process.stdout.write(JSON.stringify({ model: command, ...report }, null, 2) + "\n");
     process.exitCode = report.status === "safe" ? 0 : report.status === "violation" ? 1 : 2;
   } catch (error) {
-    process.stderr.write(`statecraft: ${error.message}\\n`);
+    process.stderr.write(`statecraft: ${error.message}\n`);
     process.exitCode = 2;
   }
 }
